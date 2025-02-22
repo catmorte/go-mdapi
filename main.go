@@ -127,6 +127,9 @@ var runCmd = &cobra.Command{
 		curdir := filepath.Dir(mdPath)
 		curfile := strings.TrimSuffix(filepath.Base(mdPath), filepath.Ext(mdPath))
 		resdir := filepath.Join(curdir, "result", curfile)
+		if vars == nil {
+			vars = map[string]string{}
+		}
 		allFields := varsPkg.Vars(vars)
 		allFields.SetCurrentDir(curdir)
 		allFields.SetCurrentFile(curfile)
