@@ -166,6 +166,7 @@ var runCmd = &cobra.Command{
 			err = os.WriteFile(afterField, []byte(allFields[v.Nam]), 0x775)
 			assert(err, "failed to write %s", v.Nam)
 		}
+		fmt.Println(allFields.GetResultDir())
 	},
 }
 
