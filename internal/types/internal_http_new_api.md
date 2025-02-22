@@ -6,9 +6,11 @@
 
 ## type[http]
 
-### method[GET]
+### method
 
-### headers
+```
+GET
+```
 
 ### url
 
