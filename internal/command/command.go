@@ -8,7 +8,6 @@ import (
 )
 
 func RunCommand(command string) (string, error) {
-	fmt.Printf("command %s\n", command)
 	// Execute the command and capture its output
 	cmd := exec.Command("bash", "-c", command) // Use bash to handle piping and stderr
 	var out bytes.Buffer

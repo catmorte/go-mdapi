@@ -106,7 +106,6 @@ func (t TypedComponent) Compute(vars varsPkg.Vars) (string, error) {
 	case TextType:
 		fallthrough
 	case ListType:
-		fmt.Println(t.Vals[0].Val, vars)
 		val = varsPkg.ReplacePatterns(t.Vals[0].Val, vars)
 	case ScriptType:
 		val = varsPkg.ReplacePatterns(t.Vals[0].Val, vars)
