@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -11,12 +10,13 @@ import (
 	"github.com/catmorte/go-mdapi/internal/file"
 	"github.com/catmorte/go-mdapi/internal/parser"
 	"github.com/catmorte/go-mdapi/internal/types"
+	varsPkg "github.com/catmorte/go-mdapi/internal/vars"
 	"github.com/spf13/cobra"
 )
 
 var (
 	mdPath string
-	vars   map[string]string
+	vars   = map[string]string{}
 )
 
 func assert(err error, s string, args ...any) {
@@ -124,16 +124,15 @@ var runCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fileData, err := parser.ParseMarkdownFile(mdPath)
 		assert(err, "failed to parse file")
-		v, err := json.MarshalIndent(fileData, "", "  ")
-		fmt.Println(string(v))
-		allFields, err := fileData.Compute(vars)
 		curdir := filepath.Dir(mdPath)
 		curfile := strings.TrimSuffix(filepath.Base(mdPath), filepath.Ext(mdPath))
 		resdir := filepath.Join(curdir, "result", curfile)
+		allFields := varsPkg.Vars(vars)
 		allFields.SetCurrentDir(curdir)
 		allFields.SetCurrentFile(curfile)
 		allFields.SetResultDir(resdir)
-		assert(err, "failed to convert value")
+		allFields, err = fileData.Compute(vars)
+		assert(err, "failed to compute")
 		dts, err := types.GetDefinedTypes()
 		assert(err, "failed to get defined types")
 		dt, err := dts.FindByName(fileData.Typ.Typ)
