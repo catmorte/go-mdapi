@@ -2,7 +2,6 @@ package types
 
 import (
 	"errors"
-	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -21,22 +20,29 @@ type (
 	DefinedTypes []DefinedType
 )
 
-func GetDefinedTypes() (DefinedTypes, error) {
-	dirname, err := os.UserHomeDir()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	cfgPath := filepath.Join(dirname, ".config", "go-mdapi")
+func GetDefinedTypes(cfgPath string) (DefinedTypes, error) {
 	types := []DefinedType{
 		internalHTTPTemplate,
 	}
-	err = filepath.Walk(cfgPath, func(path string, info fs.FileInfo, err error) error {
-		if !info.IsDir() {
-			return nil
+
+	info, err := os.Lstat(cfgPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if info.Mode()&os.ModeSymlink != 0 {
+		cfgPath, err = filepath.EvalSymlinks(cfgPath)
+		if err != nil {
+			return nil, err
 		}
+	}
+
+	err = filepath.Walk(cfgPath, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
+		}
+		if !info.IsDir() {
+			return nil
 		}
 		folderName := filepath.Base(path)
 		runTemplatePath := filepath.Join(cfgPath, folderName, "run.tmpl")

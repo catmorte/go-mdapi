@@ -15,8 +15,9 @@ import (
 )
 
 var (
-	mdPath string
-	vars   = map[string]string{}
+	mdPath  string
+	vars    = map[string]string{}
+	cfgPath string
 )
 
 func assert(err error, s string, args ...any) {
@@ -65,7 +66,7 @@ var typesCmd = &cobra.Command{
 	Use:   "types",
 	Short: "returns all available types declared in $HOME/.config/go-mdapi folder",
 	Run: func(cmd *cobra.Command, args []string) {
-		definedTypes, err := types.GetDefinedTypes()
+		definedTypes, err := types.GetDefinedTypes(cfgPath)
 		assert(err, "can't get defined types")
 		for _, v := range definedTypes {
 			fmt.Println(v.GetName())
@@ -78,7 +79,7 @@ var generateCmd = &cobra.Command{
 	Short: "generate api of type",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		dts, err := types.GetDefinedTypes()
+		dts, err := types.GetDefinedTypes(cfgPath)
 		assert(err, "failed to get defined types")
 		dt, err := dts.FindByName(args[0])
 		assert(err, "failed to get defined type")
@@ -136,7 +137,7 @@ var runCmd = &cobra.Command{
 		allFields.SetResultDir(resdir)
 		allFields, err = fileData.Compute(vars)
 		assert(err, "failed to compute")
-		dts, err := types.GetDefinedTypes()
+		dts, err := types.GetDefinedTypes(cfgPath)
 		assert(err, "failed to get defined types")
 		dt, err := dts.FindByName(fileData.Typ.Typ)
 		assert(err, "failed to get defined type")
@@ -187,6 +188,12 @@ func main() {
 	rootCmd.AddCommand(varTypesCmd)
 	rootCmd.AddCommand(generateCmd)
 	rootCmd.AddCommand(runCmd)
+
+	dirname, err := os.UserHomeDir()
+	assert(err, "can't get user's home dir")
+
+	cfgPath = filepath.Join(dirname, ".config", "go-mdapi")
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
