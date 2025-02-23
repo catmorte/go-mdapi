@@ -31,26 +31,26 @@ Here are the available CLI commands:
 
 1. Create a markdown file `example.md` with the following content:
 
-```
-# Example API
-
-## vars
-
-## type[http]
-
-### method
-
-```
-GET
-```
-
-### url
-
-```text
-http://localhost:3000
-```
-
-## after
+```markdown
+    # Example API
+    
+    ## vars
+    
+    ## type[http]
+    
+    ### method
+    
+    ```
+    GET
+    ```
+    
+    ### url
+    
+    ```text
+    http://localhost:3000
+    ```
+    
+    ## after
 ```
 
 2. Run the following command:
@@ -80,26 +80,26 @@ echo "Running custom API with method {{ index . "method" }} and URL {{ index . "
 
 `new_api.md`:
 
-```
-# Custom API
-
-## vars
-
-## type[custom]
-
-### method
-
-```
-GET
-```
-
-### url
-
-```text
-http://localhost:3000
-```
-
-## after
+```markdown
+    # Custom API
+    
+    ## vars
+    
+    ## type[custom]
+    
+    ### method
+    
+    ```
+    GET
+    ```
+    
+    ### url
+    
+    ```text
+    http://localhost:3000
+    ```
+    
+    ## after
 ```
 
 3. Run the following command to generate the new API:
@@ -124,20 +124,20 @@ Running custom API with method GET and URL http://localhost:3000
 
 The markdown files used by the CLI have the following structure:
 
-```
-# API Name
-
-## vars
-
-## type[api_type]
-
-### var_name
-
-```
-var_value
-```
-
-## after
+```markdown
+    # API Name
+    
+    ## vars
+    
+    ## type[api_type]
+    
+    ### var_name
+    
+    ```
+    var_value
+    ```
+    
+    ## after
 ```
 
 ## Built-in HTTP Client
