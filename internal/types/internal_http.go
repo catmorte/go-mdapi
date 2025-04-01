@@ -10,25 +10,17 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/catmorte/go-mdapi/internal/file"
 	"github.com/catmorte/go-mdapi/internal/vars"
 )
 
 type internalHTTP string
 
-type FieldVar string
-
 const (
-	MethodField  FieldVar = "method"
-	URLField     FieldVar = "url"
-	BodyField    FieldVar = "body"
-	HeadersField FieldVar = "headers"
+	InternalHTTPMethodField  FieldVar = "method"
+	InternalHTTPURLField     FieldVar = "url"
+	InternalHTTPBodyField    FieldVar = "body"
+	InternalHTTPHeadersField FieldVar = "headers"
 )
-
-func (f FieldVar) Get(vrs vars.Vars) (string, bool) {
-	v, ok := vrs[string(f)]
-	return v, ok
-}
 
 //go:embed internal_http_new_api.md
 var internalHTTPTemplate internalHTTP
@@ -38,21 +30,21 @@ func (d internalHTTP) GetName() string {
 }
 
 func (d internalHTTP) NewAPI() string {
-	return string(d)
+	return string(internalHTTPTemplate)
 }
 
 func (d internalHTTP) Run(vrs vars.Vars) error {
-	requestURL, ok := URLField.Get(vrs)
+	requestURL, ok := InternalHTTPURLField.Get(vrs)
 	if !ok {
 		return errors.New("missing url field")
 	}
 
-	method, ok := MethodField.Get(vrs)
+	method, ok := InternalHTTPMethodField.Get(vrs)
 	if !ok {
 		method = "GET"
 	}
 
-	requestBodyRaw, ok := BodyField.Get(vrs)
+	requestBodyRaw, ok := InternalHTTPBodyField.Get(vrs)
 	var requestBody io.Reader
 	if ok {
 		requestBody = strings.NewReader(requestBodyRaw)
@@ -61,7 +53,7 @@ func (d internalHTTP) Run(vrs vars.Vars) error {
 	rq, err := http.NewRequest(method, requestURL, requestBody)
 
 	var headers http.Header
-	headersRaw, ok := HeadersField.Get(vrs)
+	headersRaw, ok := InternalHTTPHeadersField.Get(vrs)
 	if ok {
 		headersLines := strings.Split(headersRaw, "\n")
 		for _, line := range headersLines {
@@ -123,21 +115,4 @@ func (d internalHTTP) Run(vrs vars.Vars) error {
 	}
 
 	return nil
-}
-
-func compute(key string, typeFields map[string]file.TypedComponent, vrs map[string]string, orDefault ...string) (string, error) {
-	v, ok := typeFields[key]
-	if !ok {
-		if len(orDefault) > 0 {
-			return strings.Join(orDefault, ""), nil
-		}
-		return "", fmt.Errorf("missing %s field", key)
-	}
-
-	val, err := v.Compute(vrs)
-	if err != nil {
-		return "", fmt.Errorf("error computing url: %s", err)
-	}
-
-	return val, nil
 }

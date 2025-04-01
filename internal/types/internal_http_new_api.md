@@ -2,8 +2,6 @@
 
 ## vars
 
-## computes
-
 ## type[http]
 
 ### method

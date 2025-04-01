@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/catmorte/go-mdapi/internal/converters"
 	"github.com/catmorte/go-mdapi/internal/file"
 	"github.com/catmorte/go-mdapi/internal/parser"
 	"github.com/catmorte/go-mdapi/internal/types"
@@ -38,7 +39,25 @@ var rootCmd = &cobra.Command{
 	Use:   "go-mdapi",
 	Short: "go-mdapi is a sample CLI application to call api declared in structured md file",
 	Run: func(cmd *cobra.Command, args []string) {
+
 		fmt.Println("go-mdapi is a sample CLI application to call api declared in structured md file. use --help for detail")
+		fmt.Println()
+		fmt.Println("each template supports the following fields")
+		fmt.Println(" - CURDIR - current directory")
+		fmt.Println(" - CURFILE - current file w/o extension")
+		fmt.Println(" - RESULTDIR - result directory")
+		fmt.Println()
+		fmt.Println("each var supports the following filters")
+		for _, v := range converters.SupportedConvs() {
+			fmt.Println(" - " + v)
+		}
+		fmt.Println()
+		fmt.Println("internal types")
+		for _, v := range types.InternalTypes() {
+			fmt.Println(" - " + v.GetName())
+		}
+		fmt.Println()
+
 	},
 }
 

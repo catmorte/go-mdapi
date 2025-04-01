@@ -43,3 +43,11 @@ func Convert(text string, cs []string) (string, error) {
 	}
 	return text, nil
 }
+
+func SupportedConvs() []string {
+	var res []string
+	for k := range convs {
+		res = append(res, k)
+	}
+	return res
+}

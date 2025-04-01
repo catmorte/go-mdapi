@@ -21,9 +21,7 @@ type (
 )
 
 func GetDefinedTypes(cfgPath string) (DefinedTypes, error) {
-	types := []DefinedType{
-		internalHTTPTemplate,
-	}
+	types := InternalTypes()
 
 	info, err := os.Lstat(cfgPath)
 	if err != nil {
@@ -88,4 +86,11 @@ func (dts DefinedTypes) FindByName(name string) (DefinedType, error) {
 		}
 	}
 	return nil, ErrNotExist
+}
+
+func InternalTypes() []DefinedType {
+	return []DefinedType{
+		internalHTTPTemplate,
+		internalShTemplate,
+	}
 }
