@@ -137,6 +137,54 @@ var varsCmd = &cobra.Command{
 	},
 }
 
+var compileCmd = &cobra.Command{
+	Use:   "compile",
+	Short: "compile the api",
+	Args:  cobra.MaximumNArgs(1), // Allow at most 1 argument
+	Run: func(cmd *cobra.Command, args []string) {
+		fileData, err := parser.ParseMarkdownFile(mdPath)
+		assert(err, "failed to parse file")
+		curdir := filepath.Dir(mdPath)
+		curfile := strings.TrimSuffix(filepath.Base(mdPath), filepath.Ext(mdPath))
+		resdir := filepath.Join(curdir, "result", curfile)
+		if vars == nil {
+			vars = map[string]string{}
+		}
+		allFields := varsPkg.Vars(vars)
+		allFields.SetCurrentDir(curdir)
+		allFields.SetCurrentFile(curfile)
+		allFields.SetResultDir(resdir)
+		allFields, err = fileData.Compute(vars)
+		assert(err, "failed to compute")
+		dts, err := types.GetDefinedTypes(cfgPath)
+		assert(err, "failed to get defined types")
+		dt, err := dts.FindByName(fileData.Typ.Typ)
+		assert(err, "failed to get defined type")
+		err = fileData.Typ.Fields.Compute(allFields, true)
+		assert(err, "failed to parse type fields")
+		_, err = os.Stat(resdir)
+		if !os.IsNotExist(err) {
+			counter := 1
+			var newPath string
+			for {
+				newPath = filepath.Join(curdir, "result", fmt.Sprintf("%s_%d", curfile, counter))
+				_, err = os.Stat(newPath)
+				if os.IsNotExist(err) {
+					err = os.Rename(resdir, newPath)
+					assert(err, "failed to rename")
+					break
+				}
+				counter++
+			}
+		}
+
+		err = os.MkdirAll(resdir, 0o755)
+		assert(err, "failed to create result dir")
+		err = dt.Compile(allFields)
+		assert(err, "failed to run")
+	},
+}
+
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run the api",
@@ -201,12 +249,14 @@ func defineFileFlag(c *cobra.Command) {
 func main() {
 	defineFileFlag(varsCmd)
 	defineFileFlag(runCmd)
+	defineFileFlag(compileCmd)
 	runCmd.Flags().StringToStringVar(&vars, "vars", nil, "key-value parameters (e.g. --vars key1=value1 --vars key2=value2)")
 	rootCmd.AddCommand(varsCmd)
 	rootCmd.AddCommand(typesCmd)
 	rootCmd.AddCommand(varTypesCmd)
 	rootCmd.AddCommand(generateCmd)
 	rootCmd.AddCommand(runCmd)
+	rootCmd.AddCommand(compileCmd)
 
 	dirname, err := os.UserHomeDir()
 	assert(err, "can't get user's home dir")

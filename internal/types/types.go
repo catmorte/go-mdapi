@@ -15,6 +15,7 @@ type (
 	DefinedType interface {
 		GetName() string
 		Run(vars.Vars) error
+		Compile(vars.Vars) error
 		NewAPI() string
 	}
 	DefinedTypes []DefinedType

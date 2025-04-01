@@ -2,6 +2,7 @@ package types
 
 import (
 	"bytes"
+	"fmt"
 	"text/template"
 
 	"github.com/catmorte/go-mdapi/internal/command"
@@ -40,5 +41,19 @@ func (d externalType) Run(vrs vars.Vars) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (d externalType) Compile(vrs vars.Vars) error {
+	t, err := template.New(d.Name).Funcs(templateFuncs).Parse(d.RunTemplate)
+	if err != nil {
+		return err
+	}
+	var tpl bytes.Buffer
+	err = t.Execute(&tpl, vrs)
+	if err != nil {
+		return err
+	}
+	fmt.Println(tpl.String())
 	return nil
 }
