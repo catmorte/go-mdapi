@@ -2,7 +2,6 @@ package types
 
 import (
 	_ "embed"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -50,5 +49,6 @@ func (d internalSh) Run(vrs vars.Vars) error {
 }
 
 func (d internalSh) Compile(vrs vars.Vars) error {
-	return errors.New("not supported for internal commands")
+	fmt.Println("not supported for internal commands")
+	return nil
 }
