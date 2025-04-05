@@ -3,4 +3,5 @@ curl -v -X "{{ index . "method" }}" "{{ index . "url" }}" \
 {{ else if index . "headers" }}{{- range split (index . "headers") "\n" }} -H "{{ . }}" \ {{- end }} {{- end -}}
 {{ if index . "bodyFile" }} --data-binary @"{{ index . "bodyFile" }}" \ 
 {{ else if index . "body" }} -d '{{ index . "body" }}' \ {{- end -}} 
+{{ if index . "cacert" }} --cacert "{{ index . "cacert" }}" \ {{- end -}}
 -o {{ index . "RESULTDIR" }}/body &> {{ index . "RESULTDIR" }}/metadata
