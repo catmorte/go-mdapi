@@ -9,19 +9,23 @@ import (
 )
 
 const (
-	TextType   = "text"
-	ListType   = "list"
-	ScriptType = "script"
+	TextType             = "text"
+	ListType             = "list"
+	FileListType         = "file_list"
+	AbsoluteFileListType = "abs_file_list"
+	ScriptType           = "script"
 )
 
 var typesDescriptions = map[string]string{
-	TextType:   "simple text type withing ``` ```",
-	ListType:   "one of the values in md list format (- value)",
-	ScriptType: "same as text, but the content will be executed in sh",
+	TextType:             "simple text type withing ``` ```",
+	ListType:             "one of the values in md list format (- value)",
+	FileListType:         "file path from .md dir from which the value will be selected (the value won't be computed, value is the real path to the file)",
+	AbsoluteFileListType: "absolute file path from which the value will be selected (the value won't be computed, value is the real path to the file)",
+	ScriptType:           "same as text, but the content will be executed in sh",
 }
 
 func GetSupportedTypes() []string {
-	return []string{TextType, ListType, ScriptType}
+	return []string{TextType, ListType, ScriptType, FileListType, AbsoluteFileListType}
 }
 
 func GetTypeDescription(key string) (string, error) {
@@ -57,14 +61,6 @@ type (
 	}
 	TypedComponents []TypedComponent
 )
-
-func (f File) varsToMap() map[string]TypedComponent {
-	vars := map[string]TypedComponent{}
-	for _, v := range f.Vars {
-		vars[v.Nam] = v
-	}
-	return vars
-}
 
 func (f File) Compute(vars varsPkg.Vars) (varsPkg.Vars, error) {
 	err := f.Vars.Compute(vars, false)

@@ -10,6 +10,12 @@ import (
 type Conv func(string) (string, error)
 
 var convs = map[string]Conv{
+	"upper": func(s string) (string, error) {
+		return strings.ToUpper(s), nil
+	},
+	"lower": func(s string) (string, error) {
+		return strings.ToLower(s), nil
+	},
 	"trim": func(s string) (string, error) {
 		return strings.TrimSpace(s), nil
 	},

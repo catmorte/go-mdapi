@@ -1,7 +1,9 @@
 package parser
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -32,7 +34,59 @@ func ParseMarkdownFile(mdPath string) (*file.File, error) {
 		}
 	}
 
+	basePath := filepath.Dir(mdPath)
+	f.Vars, err = fileListReplacement(f.Vars, basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	f.After, err = fileListReplacement(f.After, basePath)
+	if err != nil {
+		return nil, err
+	}
+
 	return &f, nil
+}
+
+func fileListReplacement(ts file.TypedComponents, basePath string) (file.TypedComponents, error) {
+	newTs := make(file.TypedComponents, 0, len(ts))
+	for _, t := range ts {
+
+		switch t.Typ {
+		case file.FileListType, file.AbsoluteFileListType:
+			path := t.Vals[0].Val
+			if t.Typ == file.FileListType {
+				path = filepath.Join(basePath, path)
+			}
+
+			values, err := readFileList(path)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read the file list: %w", err)
+			}
+
+			newVals := make([]file.Value, 0, len(values))
+			for _, v := range values {
+				newVals = append(newVals, file.Value{
+					Val: v,
+					Typ: file.TextType,
+				})
+			}
+
+			newT := file.TypedComponent{
+				Nam:   t.Nam,
+				Typ:   file.ListType,
+				Convs: t.Convs,
+				Vals:  newVals,
+			}
+
+			newTs = append(newTs, newT)
+		default:
+			newTs = append(newTs, t)
+			continue
+		}
+
+	}
+	return newTs, nil
 }
 
 func isSection(s string) bool {
@@ -169,4 +223,17 @@ func parseText(s []string) (int, file.Value) {
 		}
 	}
 	return i, file.Value{Val: strings.TrimSpace(stringBuilder.String()), Typ: textType}
+}
+
+func readFileList(filePath string) ([]string, error) {
+	bytes, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read the file %s: %w", filePath, err)
+	}
+	rawFile := strings.TrimSpace(string(bytes))
+	if len(rawFile) == 0 {
+		return nil, fmt.Errorf("the file is empty: %s", filePath)
+	}
+
+	return strings.Split(rawFile, "\n"), nil
 }

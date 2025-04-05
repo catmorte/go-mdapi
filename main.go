@@ -178,8 +178,6 @@ var compileCmd = &cobra.Command{
 			}
 		}
 
-		err = os.MkdirAll(resdir, 0o755)
-		assert(err, "failed to create result dir")
 		err = dt.Compile(allFields)
 		assert(err, "failed to run")
 	},
@@ -251,6 +249,7 @@ func main() {
 	defineFileFlag(runCmd)
 	defineFileFlag(compileCmd)
 	runCmd.Flags().StringToStringVar(&vars, "vars", nil, "key-value parameters (e.g. --vars key1=value1 --vars key2=value2)")
+	compileCmd.Flags().StringToStringVar(&vars, "vars", nil, "key-value parameters (e.g. --vars key1=value1 --vars key2=value2)")
 	rootCmd.AddCommand(varsCmd)
 	rootCmd.AddCommand(typesCmd)
 	rootCmd.AddCommand(varTypesCmd)
