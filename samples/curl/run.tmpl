@@ -1,7 +1,26 @@
 curl -v -X "{{ index . "method" }}" "{{ index . "url" }}" \
-{{ if index . "headersFile" }} --header @"{{ index . "headersFile" }}" \ 
-{{ else if index . "headers" }}{{- range split (index . "headers") "\n" }} -H "{{ . }}" \ {{- end }} {{- end -}}
-{{ if index . "bodyFile" }} --data-binary @"{{ index . "bodyFile" }}" \ 
-{{ else if index . "body" }} -d '{{ index . "body" }}' \ {{- end -}} 
-{{ if index . "cacert" }} --cacert "{{ index . "cacert" }}" \ {{- end -}}
--o {{ index . "RESULTDIR" }}/body &> {{ index . "RESULTDIR" }}/metadata
+{{- if index . "headersFile" }}
+  --header @"{{ index . "headersFile" }}" \
+{{- else if index . "headers" }}
+  {{- range split (index . "headers") "\n" }}
+    -H "{{ . }}" \
+  {{- end }}
+{{- end }}
+{{- if index . "formFile" }}
+  {{- range split (readFile (index . "formFile")) "\n" }}
+    -F "{{ . }}" \
+  {{- end }}
+{{- else if index . "form" }}
+  {{- range split (index . "form") "\n" }}
+    -F "{{ . }}" \
+  {{- end }}
+{{- end }}
+{{- if index . "bodyFile" }}
+  --data-binary @"{{ index . "bodyFile" }}" \
+{{- else if index . "body" }}
+  -d '{{ index . "body" }}' \
+{{- end }}
+{{- if index . "cacert" }}
+  --cacert "{{ index . "cacert" }}" \
+{{- end }}
+  -o {{ index . "RESULTDIR" }}/body &> {{ index . "RESULTDIR" }}/metadata
