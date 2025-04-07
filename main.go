@@ -19,6 +19,8 @@ var (
 	mdPath  string
 	vars    = map[string]string{}
 	cfgPath string
+
+	resultFolder = ".result"
 )
 
 func assert(err error, s string, args ...any) {
@@ -146,7 +148,7 @@ var compileCmd = &cobra.Command{
 		assert(err, "failed to parse file")
 		curdir := filepath.Dir(mdPath)
 		curfile := strings.TrimSuffix(filepath.Base(mdPath), filepath.Ext(mdPath))
-		resdir := filepath.Join(curdir, "result", curfile)
+		resdir := filepath.Join(curdir, resultFolder, curfile)
 		if vars == nil {
 			vars = map[string]string{}
 		}
@@ -162,21 +164,6 @@ var compileCmd = &cobra.Command{
 		assert(err, "failed to get defined type")
 		err = fileData.Typ.Fields.Compute(allFields, true)
 		assert(err, "failed to parse type fields")
-		_, err = os.Stat(resdir)
-		if !os.IsNotExist(err) {
-			counter := 1
-			var newPath string
-			for {
-				newPath = filepath.Join(curdir, "result", fmt.Sprintf("%s_%d", curfile, counter))
-				_, err = os.Stat(newPath)
-				if os.IsNotExist(err) {
-					err = os.Rename(resdir, newPath)
-					assert(err, "failed to rename")
-					break
-				}
-				counter++
-			}
-		}
 
 		err = dt.Compile(allFields)
 		assert(err, "failed to run")
@@ -192,7 +179,7 @@ var runCmd = &cobra.Command{
 		assert(err, "failed to parse file")
 		curdir := filepath.Dir(mdPath)
 		curfile := strings.TrimSuffix(filepath.Base(mdPath), filepath.Ext(mdPath))
-		resdir := filepath.Join(curdir, "result", curfile)
+		resdir := filepath.Join(curdir, resultFolder, curfile)
 		if vars == nil {
 			vars = map[string]string{}
 		}
@@ -213,7 +200,7 @@ var runCmd = &cobra.Command{
 			counter := 1
 			var newPath string
 			for {
-				newPath = filepath.Join(curdir, "result", fmt.Sprintf("%s_%d", curfile, counter))
+				newPath = filepath.Join(curdir, resultFolder, fmt.Sprintf("%s_%d", curfile, counter))
 				_, err = os.Stat(newPath)
 				if os.IsNotExist(err) {
 					err = os.Rename(resdir, newPath)
