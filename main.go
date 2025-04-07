@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -215,6 +216,12 @@ var runCmd = &cobra.Command{
 		assert(err, "failed to create result dir")
 		err = dt.Run(allFields)
 		assert(err, "failed to run")
+		varsFile := filepath.Join(resdir, ".vars")
+		jsonVarsRaw, err := json.MarshalIndent(allFields, "", " ")
+		assert(err, "failed to convert fields to json")
+		err = os.WriteFile(varsFile, jsonVarsRaw, 0x775)
+		assert(err, "failed to write vars")
+
 		err = fileData.After.Compute(allFields, true)
 		assert(err, "failed to compute after")
 		for _, v := range fileData.After {
