@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/base64"
 	"net/url"
+	"os"
 	"strings"
 	"text/template"
 )
@@ -24,5 +25,12 @@ var templateFuncs = template.FuncMap{
 			return "", err
 		}
 		return string(res), nil
+	},
+	"readFile": func(s string) (string, error) {
+		raw, err := os.ReadFile(s)
+		if err != nil {
+			return "", err
+		}
+		return string(raw), nil
 	},
 }
