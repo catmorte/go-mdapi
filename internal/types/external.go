@@ -3,6 +3,7 @@ package types
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"text/template"
 
 	"github.com/catmorte/go-mdapi/internal/command"
@@ -13,6 +14,7 @@ type externalType struct {
 	Name           string
 	RunTemplate    string
 	NewAPITemplate string
+	Vars           string
 }
 
 func (d externalType) GetName() string {
@@ -56,4 +58,8 @@ func (d externalType) Compile(vrs vars.Vars) error {
 	}
 	fmt.Println(tpl.String())
 	return nil
+}
+
+func (d externalType) GetVars() []string {
+	return strings.Split(d.Vars, "\n")
 }

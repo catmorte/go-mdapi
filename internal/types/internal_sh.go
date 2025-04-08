@@ -13,7 +13,7 @@ import (
 type internalSh string
 
 const (
-	InternalSHScript FieldVar = "script"
+	InternalSHScriptField FieldVar = "script"
 )
 
 //go:embed internal_sh_new_api.md
@@ -31,7 +31,7 @@ func (d internalSh) Run(vrs vars.Vars) error {
 	resultDir := vrs.GetResultDir()
 	bodyFile := filepath.Join(resultDir, "body")
 
-	script, ok := InternalSHScript.Get(vrs)
+	script, ok := InternalSHScriptField.Get(vrs)
 	if !ok {
 		return fmt.Errorf("missing script field")
 	}
@@ -51,4 +51,10 @@ func (d internalSh) Run(vrs vars.Vars) error {
 func (d internalSh) Compile(vrs vars.Vars) error {
 	fmt.Println("not supported for internal commands")
 	return nil
+}
+
+func (d internalSh) GetVars() []string {
+	return []string{
+		string(InternalSHScriptField),
+	}
 }

@@ -199,3 +199,14 @@ func (d internalHTTP) Compile(vrs vars.Vars) error {
 	fmt.Println("not supported for internal commands")
 	return nil
 }
+
+func (d internalHTTP) GetVars() []string {
+	return []string{
+		string(InternalHTTPMethodField),
+		string(InternalHTTPURLField),
+		string(InternalHTTPBodyField),
+		string(InternalHTTPBodyFileField),
+		string(InternalHTTPHeadersField),
+		string(InternalHTTPFormField),
+	}
+}

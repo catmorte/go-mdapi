@@ -79,7 +79,20 @@ var varTypesCmd = &cobra.Command{
 			c, err := file.GetTypeDescription(args[0])
 			assert(err, "failed to get type description")
 			fmt.Println(c)
+		}
+	},
+}
 
+var typeVarsCmd = &cobra.Command{
+	Use:   "type_vars",
+	Short: "returns all possible type's vars",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		dts, err := types.GetDefinedTypes(cfgPath)
+		assert(err, "failed to get defined types")
+		dt, err := dts.FindByName(args[0])
+		for _, v := range dt.GetVars() {
+			fmt.Println(v)
 		}
 	},
 }
@@ -250,6 +263,7 @@ func main() {
 	rootCmd.AddCommand(generateCmd)
 	rootCmd.AddCommand(runCmd)
 	rootCmd.AddCommand(compileCmd)
+	rootCmd.AddCommand(typeVarsCmd)
 
 	dirname, err := os.UserHomeDir()
 	assert(err, "can't get user's home dir")
