@@ -43,7 +43,7 @@ var rootCmd = &cobra.Command{
 	Short: "go-mdapi is a sample CLI application to call api declared in structured md file",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		fmt.Println("go-mdapi is a sample CLI application to call api declared in structured md file. use --help for detail")
+		fmt.Println("go-mdapi is a CLI application to call api declared in structured md file. use --help for detail")
 		fmt.Println()
 		fmt.Println("each template supports the following fields")
 		fmt.Println(" - CURDIR - current directory")
