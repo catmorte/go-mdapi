@@ -27,6 +27,9 @@ func GetDefinedTypes(cfgPath string) (DefinedTypes, error) {
 
 	info, err := os.Lstat(cfgPath)
 	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return types, nil
+		}
 		return nil, err
 	}
 
