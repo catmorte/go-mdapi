@@ -8,8 +8,12 @@ import (
 )
 
 func RunCommand(command string) (string, error) {
-	// Execute the command and capture its output
-	cmd := exec.Command("bash", "-c", command) // Use bash to handle piping and stderr
+	// Split the command into individual arguments
+	args := strings.Fields(command)
+
+	// Create a new command with the args and use bash for interpreting them
+	cmd := exec.Command("bash", "-c", strings.Join(args, " "))
+	// cmd := exec.Command("bash", "-c", command) // Use bash to handle piping and stderr
 	var out bytes.Buffer
 	var errOut bytes.Buffer
 	cmd.Stdout = &out

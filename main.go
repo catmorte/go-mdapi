@@ -26,7 +26,7 @@ var (
 
 func assert(err error, s string, args ...any) {
 	if err != nil {
-		fmt.Println(fmt.Sprintf(s, args...), err)
+		fmt.Println(fmt.Sprintf(s+": ", args...), err)
 		os.Exit(1)
 	}
 }
