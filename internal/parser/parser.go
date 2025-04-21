@@ -3,14 +3,15 @@ package parser
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 
+	"github.com/catmorte/go-mdapi/internal/command"
 	"github.com/catmorte/go-mdapi/internal/file"
+	varsPkg "github.com/catmorte/go-mdapi/internal/vars"
 )
 
-func ParseMarkdownFile(mdPath string) (*file.File, error) {
+func ParseMarkdownFile(mdPath string, vars varsPkg.Vars) (*file.File, error) {
 	bytes, err := os.ReadFile(mdPath)
 	if err != nil {
 		return nil, err
@@ -34,13 +35,12 @@ func ParseMarkdownFile(mdPath string) (*file.File, error) {
 		}
 	}
 
-	basePath := filepath.Dir(mdPath)
-	f.Vars, err = fileListReplacement(f.Vars, basePath)
+	f.Vars, err = fileListReplacement(f.Vars, vars)
 	if err != nil {
 		return nil, err
 	}
 
-	f.After, err = fileListReplacement(f.After, basePath)
+	f.After, err = fileListReplacement(f.After, vars)
 	if err != nil {
 		return nil, err
 	}
@@ -48,21 +48,17 @@ func ParseMarkdownFile(mdPath string) (*file.File, error) {
 	return &f, nil
 }
 
-func fileListReplacement(ts file.TypedComponents, basePath string) (file.TypedComponents, error) {
+func fileListReplacement(ts file.TypedComponents, vars varsPkg.Vars) (file.TypedComponents, error) {
 	newTs := make(file.TypedComponents, 0, len(ts))
 	for _, t := range ts {
-
 		switch t.Typ {
-		case file.FileListType, file.AbsoluteFileListType:
-			path := t.Vals[0].Val
-			if t.Typ == file.FileListType {
-				path = filepath.Join(basePath, path)
-			}
-
-			values, err := readFileList(path)
+		case file.ScriptListType:
+			val := varsPkg.ReplacePatterns(t.Vals[0].Val, vars)
+			val, err := command.RunCommand(val)
 			if err != nil {
-				return nil, fmt.Errorf("failed to read the file list: %w", err)
+				return nil, fmt.Errorf("failed to run command %s: %w", val, err)
 			}
+			values := strings.Split(val, "\n")
 
 			newVals := make([]file.Value, 0, len(values))
 			for _, v := range values {

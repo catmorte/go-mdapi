@@ -38,11 +38,24 @@ func assertOK(ok bool, s string, args ...any) {
 	}
 }
 
+func prepareVars() varsPkg.Vars {
+	curdir := filepath.Dir(mdPath)
+	curfile := strings.TrimSuffix(filepath.Base(mdPath), filepath.Ext(mdPath))
+	resdir := filepath.Join(curdir, resultFolder, curfile)
+	if vars == nil {
+		vars = map[string]string{}
+	}
+	allFields := varsPkg.Vars(vars)
+	allFields.SetCurrentDir(curdir)
+	allFields.SetCurrentFile(curfile)
+	allFields.SetResultDir(resdir)
+	return allFields
+}
+
 var rootCmd = &cobra.Command{
 	Use:   "go-mdapi",
 	Short: "go-mdapi is a sample CLI application to call api declared in structured md file",
 	Run: func(cmd *cobra.Command, args []string) {
-
 		fmt.Println("go-mdapi is a CLI application to call api declared in structured md file. use --help for detail")
 		fmt.Println()
 		fmt.Println("each template supports the following fields")
@@ -60,7 +73,6 @@ var rootCmd = &cobra.Command{
 			fmt.Println(" - " + v.GetName())
 		}
 		fmt.Println()
-
 	},
 }
 
@@ -127,7 +139,8 @@ var varsCmd = &cobra.Command{
 	Short: "shows all the vars in format name:type:count",
 	Args:  cobra.RangeArgs(0, 2),
 	Run: func(cmd *cobra.Command, args []string) {
-		fileData, err := parser.ParseMarkdownFile(mdPath)
+		allFields := prepareVars()
+		fileData, err := parser.ParseMarkdownFile(mdPath, allFields)
 		assert(err, "failed to open file")
 		lenArgs := len(args)
 		switch lenArgs {
@@ -158,18 +171,9 @@ var compileCmd = &cobra.Command{
 	Short: "compile the api",
 	Args:  cobra.MaximumNArgs(1), // Allow at most 1 argument
 	Run: func(cmd *cobra.Command, args []string) {
-		fileData, err := parser.ParseMarkdownFile(mdPath)
-		assert(err, "failed to parse file")
-		curdir := filepath.Dir(mdPath)
-		curfile := strings.TrimSuffix(filepath.Base(mdPath), filepath.Ext(mdPath))
-		resdir := filepath.Join(curdir, resultFolder, curfile)
-		if vars == nil {
-			vars = map[string]string{}
-		}
-		allFields := varsPkg.Vars(vars)
-		allFields.SetCurrentDir(curdir)
-		allFields.SetCurrentFile(curfile)
-		allFields.SetResultDir(resdir)
+		allFields := prepareVars()
+		fileData, err := parser.ParseMarkdownFile(mdPath, allFields)
+		assert(err, "failed to prepare")
 		allFields, err = fileData.Compute(vars)
 		assert(err, "failed to compute")
 		dts, err := types.GetDefinedTypes(cfgPath)
@@ -178,7 +182,6 @@ var compileCmd = &cobra.Command{
 		assert(err, "failed to get defined type")
 		err = fileData.Typ.Fields.Compute(allFields, true)
 		assert(err, "failed to parse type fields")
-
 		err = dt.Compile(allFields)
 		assert(err, "failed to run")
 	},
@@ -189,18 +192,12 @@ var runCmd = &cobra.Command{
 	Short: "run the api",
 	Args:  cobra.MaximumNArgs(1), // Allow at most 1 argument
 	Run: func(cmd *cobra.Command, args []string) {
-		fileData, err := parser.ParseMarkdownFile(mdPath)
-		assert(err, "failed to parse file")
-		curdir := filepath.Dir(mdPath)
-		curfile := strings.TrimSuffix(filepath.Base(mdPath), filepath.Ext(mdPath))
-		resdir := filepath.Join(curdir, resultFolder, curfile)
-		if vars == nil {
-			vars = map[string]string{}
-		}
-		allFields := varsPkg.Vars(vars)
-		allFields.SetCurrentDir(curdir)
-		allFields.SetCurrentFile(curfile)
-		allFields.SetResultDir(resdir)
+		allFields := prepareVars()
+		fileData, err := parser.ParseMarkdownFile(mdPath, allFields)
+		assert(err, "failed to prepare")
+		resdir := allFields.GetResultDir()
+		curdir := allFields.GetCurrentDir()
+		curfile := allFields.GetCurrentFile()
 		allFields, err = fileData.Compute(vars)
 		assert(err, "failed to compute")
 		dts, err := types.GetDefinedTypes(cfgPath)
@@ -224,7 +221,6 @@ var runCmd = &cobra.Command{
 				counter++
 			}
 		}
-
 		err = os.MkdirAll(resdir, 0o755)
 		assert(err, "failed to create result dir")
 		err = dt.Run(allFields)
@@ -234,7 +230,6 @@ var runCmd = &cobra.Command{
 		assert(err, "failed to convert fields to json")
 		err = os.WriteFile(varsFile, jsonVarsRaw, 0x775)
 		assert(err, "failed to write vars")
-
 		err = fileData.After.Compute(allFields, true)
 		assert(err, "failed to compute after")
 		for _, v := range fileData.After {
@@ -257,6 +252,7 @@ func main() {
 	defineFileFlag(compileCmd)
 	runCmd.Flags().StringToStringVar(&vars, "vars", nil, "key-value parameters (e.g. --vars key1=value1 --vars key2=value2)")
 	compileCmd.Flags().StringToStringVar(&vars, "vars", nil, "key-value parameters (e.g. --vars key1=value1 --vars key2=value2)")
+	varsCmd.Flags().StringToStringVar(&vars, "vars", nil, "key-value parameters (e.g. --vars key1=value1 --vars key2=value2)")
 	rootCmd.AddCommand(varsCmd)
 	rootCmd.AddCommand(typesCmd)
 	rootCmd.AddCommand(varTypesCmd)
