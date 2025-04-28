@@ -38,6 +38,40 @@ var convs = map[string]Conv{
 	"q2_2tick": func(s string) (string, error) {
 		return strings.ReplaceAll(s, "\"", "\\`"), nil
 	},
+	"q2_escape": func(s string) (string, error) {
+		return escapeUnescaped(s, '"'), nil
+	},
+	"q1_escape": func(s string) (string, error) {
+		return escapeUnescaped(s, '\''), nil
+	},
+}
+
+func escapeUnescaped(s string, ch byte) string {
+	var b strings.Builder
+	escaped := false
+
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+
+		if c == '\\' && !escaped {
+			escaped = true
+			b.WriteByte(c)
+			continue
+		}
+
+		if c == '"' {
+			if !escaped {
+				b.WriteByte('\\')
+			}
+			b.WriteByte(ch)
+		} else {
+			b.WriteByte(c)
+		}
+
+		escaped = false
+	}
+
+	return b.String()
 }
 
 func Convert(text string, cs []string) (string, error) {
