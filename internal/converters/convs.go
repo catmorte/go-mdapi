@@ -32,6 +32,12 @@ var convs = map[string]Conv{
 		}
 		return string(res), nil
 	},
+	"Q1_2tick": func(s string) (string, error) {
+		return strings.ReplaceAll(s, "'", "\\`"), nil
+	},
+	"Q2_2tick": func(s string) (string, error) {
+		return strings.ReplaceAll(s, "\"", "\\`"), nil
+	},
 }
 
 func Convert(text string, cs []string) (string, error) {
